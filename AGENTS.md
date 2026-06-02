@@ -6,16 +6,25 @@ Upstream version: **0.31.2** (pkgrel 1).
 
 ## Layout
 
-Four tracked source files — nothing else:
+The repo is a personal AUR mirror with one package per subdirectory. For `command-code`:
 
-| File | Role |
-|------|------|
-| `PKGBUILD` | Build script (60 lines) |
-| `.SRCINFO` | AUR metadata; regenerate with `makepkg --printsrcinfo` |
-| `LICENSE` | 0BSD for the PKGBUILD repo sources |
-| `command-code.license` | Upstream Terms of Service; installed at `/usr/share/licenses/command-code/LICENSE` |
+```
+.
+├── .github/workflows/
+│   ├── check-upstream.yml   # cron: poll npm, open PR on new version
+│   ├── pr-verify.yml        # PR:  run makepkg to verify, then auto-merge
+│   └── publish.yml          # push to main: stage command-code/* and push to AUR
+├── command-code/            # the AUR package — must be pushable to AUR as-is
+│   ├── PKGBUILD
+│   ├── .SRCINFO
+│   ├── LICENSE              # 0BSD for the PKGBUILD itself
+│   └── command-code.license # upstream ToS, installed at /usr/share/licenses/command-code/LICENSE
+├── AGENTS.md                # this file
+├── LICENSE                  # n/a — moved into command-code/
+└── README.md                # mirror-level docs (not pushed to AUR)
+```
 
-`opencode.json` and similar configs are not present — the repo is just a build recipe.
+**Hard rule:** the deploy action pushes only `command-code/` to AUR. `git push aur master` from this repo is no longer safe — workflow files would be rejected, and the AUR server is strict about file locations. Use the GitHub workflow.
 
 ## What the package installs
 
@@ -24,23 +33,29 @@ Four wrapper scripts in `/usr/bin/` (`cmd`, `cmdc`, `command-code`, `commandcode
 ## Build & verify
 
 ```bash
-rm -rf src pkg        # clean any prior build
-makepkg -f            # build
-sudo pacman -U command-code-0.31.0-*.pkg.tar.zst
-cmd --version         # any of the 4 bin names works
+cd command-code
+rm -rf src pkg                  # clean any prior build
+makepkg -f                      # build
+sudo pacman -U command-code-*-x86_64.pkg.tar.zst
+cmd --version                   # any of the 4 bin names works
 ls /usr/share/licenses/command-code/LICENSE
 ```
 
-## Version bump
+The `pr-verify.yml` workflow runs the same `makepkg` step on a GitHub Actions runner. If the user wants to verify on a specific arch or with custom flags, edit the workflow.
 
-1. `npm view command-code version` — get latest
-2. Download new tarball; `curl -sL <url> | sha256sum`
-3. Update `pkgver`, `pkgrel` (reset to 1), `sha256sums` in `PKGBUILD`
-4. `makepkg --printsrcinfo > .SRCINFO`
-5. `makepkg -f` to verify the build
-6. Commit `PKGBUILD` + `.SRCINFO` only; push to `aur` remote (`master` tracks `aur/master`)
+## Version bump (automated)
 
-## Gotchas
+Routine version bumps are fully automated:
+
+1. `check-upstream.yml` runs daily at 04:00 UTC (also `workflow_dispatch`-able).
+2. It compares the current `pkgver` in `command-code/PKGBUILD` to `https://registry.npmjs.org/command-code/latest`.
+3. On a new version, it rewrites `pkgver`/`pkgrel`/`sha256sums` via `updpkgsums`, regenerates `.SRCINFO`, and opens a PR titled `command-code: update to X.Y.Z`.
+4. `pr-verify.yml` builds the package. On success, it enables GitHub auto-merge on the PR.
+5. The PR merges to `main`. `publish.yml` then stages `command-code/PKGBUILD`, `.SRCINFO`, and the two license files and pushes them to AUR over SSH.
+
+**Escape hatch (CI is broken):** manually edit `command-code/PKGBUILD` (new `pkgver`, `pkgrel=1`, recompute `sha256sums`), regenerate `.SRCINFO`, commit, push to `github main` with `[skip ci]` to bypass the workflows, then push the package files to AUR directly from a separate clone (e.g., `git clone ssh://aur@aur.archlinux.org/command-code.git /tmp/cc && cp command-code/{PKGBUILD,.SRCINFO,command-code.license,LICENSE} /tmp/cc/ && cd /tmp/cc && makepkg --printsrcinfo > .SRCINFO && git add . && git commit -m "..." && git push`).
+
+## Gotchas (PKGBUILD internals)
 
 These are the non-obvious bits. Don't remove them when refactoring the PKGBUILD.
 
@@ -70,8 +85,9 @@ jq '.|=with_entries(select(.key|test("^_")|not))' "$pkgjson"
 
 Untracked files are build/runtime artifacts, **not** source:
 
-- `command-code-0.31.0.tgz` — the downloaded npm tarball
-- `command-code-*-x86_64.pkg.tar.zst` — built package
+- `command-code/command-code-*.tgz` — the downloaded npm tarball (after build)
+- `command-code/command-code-*-x86_64.pkg.tar.zst` — built package
+- `command-code/src/`, `command-code/pkg/` — makepkg build dirs
 - `.commandcode/` — runtime data from using the tool (already ignored via the global `.*` rule)
 
 `.gitignore` covers the first two. Never `git add` them; never commit the tarball alongside `PKGBUILD`.
@@ -81,3 +97,4 @@ Untracked files are build/runtime artifacts, **not** source:
 - [PKGBUILD(5)](https://man.archlinux.org/man/PKGBUILD.5)
 - [Node.js package guidelines](https://wiki.archlinux.org/title/Node.js_package_guidelines)
 - [Nonfree applications package guidelines](https://wiki.archlinux.org/title/Nonfree_applications_package_guidelines)
+- [AUR submission](https://wiki.archlinux.org/title/Arch_User_Repository#Submitting_packages)

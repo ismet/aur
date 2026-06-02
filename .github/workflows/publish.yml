@@ -1,0 +1,40 @@
+name: Publish command-code to AUR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'command-code/**'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read package version
+        id: vars
+        working-directory: command-code
+        run: |
+          echo "pkgver=$(grep -E '^pkgver=' PKGBUILD | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+          echo "pkgrel=$(grep -E '^pkgrel=' PKGBUILD | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v4
+        with:
+          pkgname: command-code
+          pkgbuild: command-code/PKGBUILD
+          assets: |
+            command-code/command-code.license
+            command-code/LICENSE
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          ssh_keyscan_types: rsa,ecdsa,ed25519
+          commit_message: "upgpkg: command-code ${{ steps.vars.outputs.pkgver }}-${{ steps.vars.outputs.pkgrel }}"
+          allow_empty_commits: false
