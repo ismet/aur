@@ -16,7 +16,7 @@ jobs:
     container:
       image: archlinux:base-devel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Read package version
         id: vars

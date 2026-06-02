@@ -1,0 +1,38 @@
+name: Verify command-code build
+
+on:
+  pull_request:
+    paths:
+      - 'command-code/**'
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm --needed npm jq
+          useradd -m builder
+
+      - name: Build package
+        working-directory: command-code
+        run: |
+          chown -R builder:builder .
+          runuser -u builder -- makepkg -sf --noconfirm
+
+      - name: Enable auto-merge
+        if: success()
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
