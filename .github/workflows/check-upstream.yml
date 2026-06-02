@@ -22,8 +22,8 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.name  'command-code-bot'
-          git config user.email 'ismet.togay@gmail.com'
+          git -C "$GITHUB_WORKSPACE" config user.name  'command-code-bot'
+          git -C "$GITHUB_WORKSPACE" config user.email 'ismet.togay@gmail.com'
 
       - name: Detect upstream version
         id: detect
