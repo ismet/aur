@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install dependencies
-        run: pacman -Sy --noconfirm --needed npm jq github-cli
+        run: pacman -Sy --noconfirm --needed git npm jq github-cli
 
       - name: Configure git
         run: |
