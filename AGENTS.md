@@ -2,7 +2,7 @@
 
 AUR package for [Command Code](https://commandcode.ai), an AI coding agent distributed as a npm tarball. Maintainer: Ismet Togay <ismet.togay@gmail.com>. License: `LicenseRef-command-code` (proprietary).
 
-Upstream version: **0.31.2** (pkgrel 1).
+Upstream version: **0.33.0** (pkgrel 1).
 
 ## Layout
 
