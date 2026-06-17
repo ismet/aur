@@ -17,8 +17,8 @@ The repo is a personal AUR mirror with one package per subdirectory. For `comman
 ├── command-code/            # the AUR package — must be pushable to AUR as-is
 │   ├── PKGBUILD
 │   ├── .SRCINFO
-│   ├── LICENSE              # 0BSD for the PKGBUILD itself
-│   └── command-code.license # upstream ToS, installed at /usr/share/licenses/command-code/LICENSE
+│   ├── LICENSE              # upstream ToS, installed at /usr/share/licenses/command-code/LICENSE
+│   └── PKGBUILD
 ├── AGENTS.md                # this file
 ├── LICENSE                  # n/a — moved into command-code/
 └── README.md                # mirror-level docs (not pushed to AUR)
@@ -51,9 +51,9 @@ Routine version bumps are fully automated:
 2. It compares the current `pkgver` in `command-code/PKGBUILD` to `https://registry.npmjs.org/command-code/latest`.
 3. On a new version, it rewrites `pkgver`/`pkgrel`/`sha256sums` via `updpkgsums`, regenerates `.SRCINFO`, and opens a PR titled `command-code: update to X.Y.Z`.
 4. `pr-verify.yml` builds the package. On success, it enables GitHub auto-merge on the PR.
-5. The PR merges to `main`. `publish.yml` then stages `command-code/PKGBUILD`, `.SRCINFO`, and the two license files and pushes them to AUR over SSH.
+5. The PR merges to `main`. `publish.yml` then stages `command-code/PKGBUILD`, `.SRCINFO`, and `LICENSE` and pushes them to AUR over SSH.
 
-**Escape hatch (CI is broken):** manually edit `command-code/PKGBUILD` (new `pkgver`, `pkgrel=1`, recompute `sha256sums`), regenerate `.SRCINFO`, commit, push to `github main` with `[skip ci]` to bypass the workflows, then push the package files to AUR directly from a separate clone (e.g., `git clone ssh://aur@aur.archlinux.org/command-code.git /tmp/cc && cp command-code/{PKGBUILD,.SRCINFO,command-code.license,LICENSE} /tmp/cc/ && cd /tmp/cc && makepkg --printsrcinfo > .SRCINFO && git add . && git commit -m "..." && git push`).
+**Escape hatch (CI is broken):** manually edit `command-code/PKGBUILD` (new `pkgver`, `pkgrel=1`, recompute `sha256sums`), regenerate `.SRCINFO`, commit, push to `github main` with `[skip ci]` to bypass the workflows, then push the package files to AUR directly from a separate clone (e.g., `git clone ssh://aur@aur.archlinux.org/command-code.git /tmp/cc && cp command-code/{PKGBUILD,.SRCINFO,LICENSE} /tmp/cc/ && cd /tmp/cc && makepkg --printsrcinfo > .SRCINFO && git add . && git commit -m "..." && git push`).
 
 ## Gotchas (PKGBUILD internals)
 
@@ -79,7 +79,7 @@ jq '.|=with_entries(select(.key|test("^_")|not))' "$pkgjson"
 
 **`--allow-scripts sharp --allow-scripts protobufjs`.** Suppresses `npm warn allow-scripts` for the two packages that need install scripts (`sharp` downloads native binaries, `protobufjs` generates code). Using `--userconfig` is the older approach and was replaced in commit `9a2094a`.
 
-**`command-code.license` must be in `source=`.** Otherwise it won't be copied to `$srcdir` and the `install -Dm644` line in `package()` fails. Use `SKIP` for its checksum.
+**`LICENSE` must be in `source=`.** Otherwise it won't be copied to `$srcdir` and the `install -Dm644` line in `package()` fails. Use `SKIP` for its checksum if fetched from a URL instead of bundled.
 
 ## Working tree
 
