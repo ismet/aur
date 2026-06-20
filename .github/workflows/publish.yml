@@ -31,7 +31,6 @@ jobs:
           pkgname: command-code
           pkgbuild: command-code/PKGBUILD
           assets: |
-            command-code/command-code.license
             command-code/LICENSE
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}

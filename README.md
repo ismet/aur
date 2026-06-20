@@ -17,8 +17,7 @@ each package in sync with its upstream.
 ├── command-code/        # the AUR package
 │   ├── PKGBUILD
 │   ├── .SRCINFO
-│   ├── LICENSE          # 0BSD for the PKGBUILD itself
-│   └── command-code.license
+│   └── LICENSE          # upstream ToS, installed to /usr/share/licenses/
 ├── AGENTS.md            # maintainer notes for AI agents
 └── README.md            # you are here
 ```
