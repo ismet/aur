@@ -18,6 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install dependencies
+        run: pacman -Sy --noconfirm git openssh
+
       - name: Read package version
         id: vars
         working-directory: command-code
