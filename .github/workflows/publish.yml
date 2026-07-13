@@ -14,7 +14,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     container:
-      image: archlinux:base-devel
+      image: archlinux:latest
     steps:
       - uses: actions/checkout@v6
 
@@ -46,12 +46,10 @@ jobs:
           # Remove stale files that should not be in the AUR repo
           rm -f AGENTS.md README.md command-code.license
 
-          # Copy in fresh PKGBUILD and LICENSE
+          # Copy in fresh PKGBUILD, .SRCINFO, and LICENSE
           cp "$GITHUB_WORKSPACE/command-code/PKGBUILD" .
+          cp "$GITHUB_WORKSPACE/command-code/.SRCINFO" .
           cp "$GITHUB_WORKSPACE/command-code/LICENSE" .
-
-          # Regenerate .SRCINFO
-          makepkg --printsrcinfo > .SRCINFO
 
           git add -A
           git diff --staged --quiet || \
