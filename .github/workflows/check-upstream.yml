@@ -15,10 +15,15 @@ jobs:
     container:
       image: archlinux:base-devel
     steps:
+      - name: Install git before checkout
+        run: pacman -Sy --noconfirm --needed git
+
       - uses: actions/checkout@v6
 
       - name: Install dependencies
-        run: pacman -Sy --noconfirm --needed git npm jq github-cli
+        run: |
+          pacman -Sy --noconfirm --needed npm jq github-cli
+          useradd -m builder
 
       - name: Configure git
         run: |
@@ -51,8 +56,9 @@ jobs:
           new="${{ steps.detect.outputs.new_version }}"
           sed -i "s/^pkgver=.*/pkgver=$new/"  PKGBUILD
           sed -i "s/^pkgrel=.*/pkgrel=1/"     PKGBUILD
-          updpkgsums PKGBUILD
-          makepkg --printsrcinfo > .SRCINFO
+          chown -R builder:builder .
+          runuser -u builder -- updpkgsums PKGBUILD
+          runuser -u builder -- makepkg --printsrcinfo > .SRCINFO
 
       - name: Open pull request
         if: steps.detect.outputs.up_to_date == 'false'
