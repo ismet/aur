@@ -39,5 +39,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          git config --global --add safe.directory '*'
           gh pr merge "$PR_NUMBER" --squash --delete-branch
           gh workflow run publish.yml --ref main
