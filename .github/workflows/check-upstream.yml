@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -Sy --noconfirm --needed npm jq github-cli
+          pacman -Sy --noconfirm --needed npm jq github-cli pacman-contrib
           useradd -m builder
 
       - name: Configure git
