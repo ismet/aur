@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install dependencies
-        run: pacman -Sy --noconfirm git openssh
+        run: pacman -Syu --noconfirm --needed git openssh
 
       - name: Read package version
         id: vars

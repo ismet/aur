@@ -18,13 +18,13 @@ jobs:
       image: archlinux:base-devel
     steps:
       - name: Install git before checkout
-        run: pacman -Sy --noconfirm --needed git
+        run: pacman -Syu --noconfirm --needed git
 
       - uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
-          pacman -Sy --noconfirm --needed npm jq github-cli
+          pacman -S --noconfirm --needed npm jq github-cli
           useradd -m builder
 
       - name: Build package
