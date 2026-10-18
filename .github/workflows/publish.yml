@@ -46,10 +46,13 @@ jobs:
           # Remove stale files that should not be in the AUR repo
           rm -f AGENTS.md README.md command-code.license
 
-          # Copy in fresh PKGBUILD, .SRCINFO, and LICENSE
+          # Copy in fresh PKGBUILD, .SRCINFO and licensing files
           cp "$GITHUB_WORKSPACE/command-code/PKGBUILD" .
           cp "$GITHUB_WORKSPACE/command-code/.SRCINFO" .
           cp "$GITHUB_WORKSPACE/command-code/LICENSE" .
+          cp "$GITHUB_WORKSPACE/command-code/LICENSE-command-code" .
+          cp "$GITHUB_WORKSPACE/command-code/REUSE.toml" .
+          cp -r "$GITHUB_WORKSPACE/command-code/LICENSES" .
 
           git add -A
           git diff --staged --quiet || \

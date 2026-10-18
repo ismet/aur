@@ -1,0 +1,8 @@
+version = 1
+
+# CI workflow files of this packaging monorepo (maintainer-authored).
+# Per-package sources are covered by command-code/REUSE.toml.
+[[annotations]]
+path = [".github/workflows/*.yml"]
+SPDX-FileCopyrightText = "Arch Linux contributors"
+SPDX-License-Identifier = "0BSD"
